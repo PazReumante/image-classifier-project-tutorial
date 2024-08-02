@@ -1,96 +1,88 @@
-<!-- hide -->
-# RNA para clasificación de imágenes - Guía paso a paso
-<!-- endhide -->
+# Plantilla de Proyecto de Ciencia de Datos
 
-- Comprender un dataset nuevo.
-- Modelar los datos utilizando una RNA.
-- Analizar los resultados y optimizar el modelo.
+Esta plantilla está diseñada para impulsar proyectos de ciencia de datos proporcionando una configuración básica para conexiones de base de datos, procesamiento de datos, y desarrollo de modelos de aprendizaje automático. Incluye una organización estructurada de carpetas para tus conjuntos de datos y un conjunto de paquetes de Python predefinidos necesarios para la mayoría de las tareas de ciencia de datos.
 
-## 🌱 Cómo iniciar este proyecto
+## Estructura
 
-Sigue las siguientes instrucciones:
+El proyecto está organizado de la siguiente manera:
 
-1. Crea un nuevo repositorio basado en el [proyecto de Machine Learning](https://github.com/4GeeksAcademy/machine-learning-python-template) o [haciendo clic aquí](https://github.com/4GeeksAcademy/machine-learning-python-template/generate).
-2. Abre el repositorio creado recientemente en Codespace usando la [extensión del botón de Codespace](https://docs.github.com/en/codespaces/developing-in-codespaces/creating-a-codespace-for-a-repository#creating-a-codespace-for-a-repository).
-3. Una vez que el VSCode del Codespace haya terminado de abrirse, comienza tu proyecto siguiendo las instrucciones a continuación.
+- `app.py` - El script principal de Python que ejecutas para tu proyecto.
+- `explore.py` - Un notebook para que puedas hacer tus exploraciones, idealmente el codigo de este notebook se migra hacia app.py para subir a produccion.
+- `utils.py` - Este archivo contiene código de utilidad para operaciones como conexiones de base de datos.
+- `requirements.txt` - Este archivo contiene la lista de paquetes de Python necesarios.
+- `models/` - Este directorio debería contener tus clases de modelos SQLAlchemy.
+- `data/` - Este directorio contiene los siguientes subdirectorios:
+  - `interim/` - Para datos intermedios que han sido transformados.
+  - `processed/` - Para los datos finales a utilizar para el modelado.
+  - `raw/` - Para datos brutos sin ningún procesamiento.
 
-## 🚛 Cómo entregar este proyecto
+## Configuración
 
-Una vez que hayas terminado de resolver el caso práctico, asegúrate de confirmar tus cambios, haz push a tu repositorio y ve a 4Geeks.com para subir el enlace del repositorio.
+**Prerrequisitos**
 
-## 📝 Instrucciones
+Asegúrate de tener Python 3.11+ instalado en tu máquina. También necesitarás pip para instalar los paquetes de Python.
 
-### Sistema de clasificación de imágenes
+**Instalación**
 
-El conjunto de datos se compone de fotos de perros y gatos proporcionadas como un subconjunto de fotos de uno mucho más grande de 3 millones de fotos anotadas manualmente. Estos datos se obtuvieron a través de una colaboración entre Petfinder.com y Microsoft.
+Clona el repositorio del proyecto en tu máquina local.
 
-El conjunto de datos se usó originalmente como un CAPTCHA, es decir, una tarea que se cree que un humano encuentra trivial, pero que una máquina no puede resolver, que se usa en sitios web para distinguir entre usuarios humanos y bots. La tarea se denominó "Asirra". Cuando se presentó "Asirra", se mencionó "que los estudios de usuarios indican que los humanos pueden resolverlo el 99,6% de las veces en menos de 30 segundos". A menos que se produzca un gran avance en la visión artificial, esperamos que los ordenadores no tengan más de 1/54.000 posibilidades de resolverlo.
+Navega hasta el directorio del proyecto e instala los paquetes de Python requeridos:
 
-En el momento en que se publicó la competencia, el resultado de última generación se logró con un SVM y se describió en un artículo de 2007 con el título "Ataques de Machine Learning contra el CAPTCHA de Asirra" (PDF) que logró una precisión de clasificación del 80%. Fue este documento el que demostró que la tarea ya no era una tarea adecuada para un CAPTCHA poco después de que se propusiera la tarea.
-
-#### Paso 1: Carga del conjunto de datos
-
-El conjunto de datos se encuentra en Kaggle y tendrás que acceder a ella para descargarlos. La competición la puedes encontrar [aquí](https://www.kaggle.com/c/dogs-vs-cats/data) (o copiando y pegando el siguiente enlace en tu navegador: `https://www.kaggle.com/c/dogs-vs-cats/data`)
-
-Descarga la carpeta dataset y descomprime los archivos. Ahora tendrás una carpeta llamada `train` que contiene 25.000 archivos de imagen (formato .jpg) de perros y gatos. Las fotos están etiquetadas por su nombre de archivo, con la palabra `dog` o `cat`.
-
-#### Paso 2: Visualiza la información de entrada
-
-El primer paso cuando nos enfrentamos a un problema de clasificación de imágenes es obtener toda la información posible a través de ellas. Por lo tanto, carga e imprime las primeras nueve fotos de perros en una sola figura. Repite lo mismo para los gatos. Puedes ver que las fotos son a color y tienen diferentes formas y tamaños.
-
-Esta variedad de tamaños y formatos debe solucionarse antes de entrenar el modelo. Asegúrate de que todas tengan un tamaño fijo de 200x200 píxeles.
-
-Como podrás ver, son una gran cantidad de imágenes, asegúrate de seguir las siguientes normas:
-
-1. **Si tienes más de 12 gigabytes de RAM**, usa la API de procesamiento de imágenes de Keras para cargar las 25.000 fotos en el conjunto de datos de entrenamiento y remodelarlas a fotos cuadradas de 200×200 píxeles. La etiqueta también debe determinarse para cada foto en función de los nombres de archivo. Se debe guardar una tupla de fotos y etiquetas.
-2. **Si no tienes más de 12 gigabytes de RAM**, carga las imágenes progresivamente usando la clase Keras `ImageDataGenerator` y la función `flow_from_directory()`. Esto será más lento de ejecutar, pero se ejecutará en hardware de menor capacidad. Esta función prefiere que los datos se dividan en directorios *train* y *test* separados, y debajo de cada directorio para tener un subdirectorio para cada clase.
-
-Una vez tengas todas las imágenes procesadas, crea un objeto `ImageDataGenerator` para datos de entrenamiento y prueba. Luego pasa la carpeta que tiene datos de entrenamiento al objeto `trdata` y, de manera similar, pasa la carpeta que tiene datos de prueba al objeto `tsdata`. De esta forma, se etiquetarán las imágenes automáticamente y estará todo listo para entrar a la red.
-
-#### Paso 3: Construye una RNA
-
-Cualquier clasificador que se ajuste a este problema tendrá que ser robusto porque algunas imágenes muestran al gato o al perro en una esquina o tal vez a 2 gatos o perros en la misma foto. Si has podido investigar algunas de las implementaciones de los ganadores de otras competiciones también relacionadas con imágenes, verás que `VGG16` es una arquitectura de CNN utilizada para ganar la competencia de Kaggle ILSVR (Imagenet) en 2014. Se considera una de las arquitecturas de modelos de visión con mejores resultados hasta la fecha.
-
-Utiliza la siguiente arquitectura de prueba:
-
-```py
-model = Sequential()
-model.add(Conv2D(input_shape = (224,224,3), filters = 64, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 64,kernel_size = (3,3),padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Conv2D(filters = 128, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 128, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Conv2D(filters = 256, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 256, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 256, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Flatten())
-model.add(Dense(units = 4096,activation = "relu"))
-model.add(Dense(units = 4096,activation = "relu"))
-model.add(Dense(units = 2, activation = "softmax"))
+```bash
+pip install -r requirements.txt
 ```
 
-El código anterior aplica convoluciones a los datos (capas `Conv2D` y `MaxPool2D`) y después aplica capas densas (capas `Dense`) para el procesamiento de los valores numéricos obtenidos tras las convoluciones.
+**Crear una base de datos (si es necesario)**
 
-A continuación añade los elementos restantes para conformar el modelo, entrénalo y mide su rendimiento.
+Crea una nueva base de datos dentro del motor Postgres personalizando y ejecutando el siguiente comando: `$ createdb -h localhost -U <username> <db_name>`
+Conéctate al motor Postgres para usar tu base de datos, manipular tablas y datos: `$ psql -h localhost -U <username> <db_name>`
+NOTA: Recuerda revisar la información del archivo ./.env para obtener el nombre de usuario y db_name.
 
-#### Paso 4: Optimiza el modelo anterior
+¡Una vez que estés dentro de PSQL podrás crear tablas, hacer consultas, insertar, actualizar o eliminar datos y mucho más!
 
-Importa el método `ModelCheckpoint` y `EarlyStopping` de Keras. Crea un objeto de ambos y pásalo como funciones callback a `fit_generator`.
+**Variables de entorno**
 
-Carga el mejor modelo de los anteriores y utiliza el conjunto de test para hacer predicciones.
+Crea un archivo .env en el directorio raíz del proyecto para almacenar tus variables de entorno, como tu cadena de conexión a la base de datos:
 
-#### Paso 5: Guarda el modelo
+```makefile
+DATABASE_URL="your_database_connection_url_here"
+```
 
-Almacena el modelo en la carpeta correspondiente.
+## Ejecutando la Aplicación
 
-> Nota: También incorporamos muestras de solución en `./solution.ipynb` que te sugerimos honestamente que solo uses si estás atascado por más de 30 minutos o si ya has terminado y quieres compararlo con tu enfoque.
+Para ejecutar la aplicación, ejecuta el script app.py desde la raíz del directorio del proyecto:
+
+```bash
+python app.py
+```
+
+## Añadiendo Modelos
+
+Para añadir clases de modelos SQLAlchemy, crea nuevos archivos de script de Python dentro del directorio models/. Estas clases deben ser definidas de acuerdo a tu esquema de base de datos.
+
+Definición del modelo de ejemplo (`models/example_model.py`):
+
+```py
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+
+Base = declarative_base()
+
+class ExampleModel(Base):
+    __tablename__ = 'example_table'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+```
+
+## Trabajando con Datos
+
+Puedes colocar tus conjuntos de datos brutos en el directorio data/raw, conjuntos de datos intermedios en data/interim, y los conjuntos de datos procesados listos para el análisis en data/processed.
+
+Para procesar datos, puedes modificar el script app.py para incluir tus pasos de procesamiento de datos, utilizando pandas para la manipulación y análisis de datos.
+
+## Contribuyentes
+
+Esta plantilla fue construida como parte del [Data Science and Machine Learning Bootcamp](https://4geeksacademy.com/us/coding-bootcamps/datascience-machine-learning) de 4Geeks Academy por [Alejandro Sanchez](https://twitter.com/alesanchezr) y muchos otros contribuyentes. Descubre más sobre [los programas BootCamp de 4Geeks Academy](https://4geeksacademy.com/us/programs) aquí.
+
+Otras plantillas y recursos como este se pueden encontrar en la página de GitHub de la escuela.

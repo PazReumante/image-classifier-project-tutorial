@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=c:\Users\USER\Documents\repos\realestate-datacleanup-exercise\image-classifier-project-tutorial\.venv
+set VIRTUAL_ENV=c:\Users\USER\Documents\repos\realestate-datacleanup-exercise\Clasificador-de-imagenes\.venv
 
 if not defined PROMPT set PROMPT=$P$G
 

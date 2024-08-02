@@ -1,96 +1,89 @@
-<!-- hide -->
-# RNA for image classification - Step by step guide
-<!-- endhide -->
+# Data Science Project Boilerplate
 
-- Understanding a new dataset.
-- Model the data using an ANN.
-- Analyze the results and optimize the model.
+This boilerplate is designed to kickstart data science projects by providing a basic setup for database connections, data processing, and machine learning model development. It includes a structured folder organization for your datasets and a set of pre-defined Python packages necessary for most data science tasks.
 
-## 🌱 How to start this project
+## Structure
 
-Follow the instructions below:
+The project is organized as follows:
 
-1. Create a new repository based on [machine learning project](https://github.com/4GeeksAcademy/machine-learning-python-template) by [clicking here](https://github.com/4GeeksAcademy/machine-learning-python-template/generate).
-2. Open the newly created repository in Codespace using the [Codespace button extension](https://docs.github.com/en/codespaces/developing-in-codespaces/creating-a-codespace-for-a-repository#creating-a-codespace-for-a-repository).
-3. Once the Codespace VSCode has finished opening, start your project by following the instructions below.
+- `app.py` - The main Python script that you run for your project.
+- `explore.py` - A notebook to explore data, play around, visualize, clean, etc. Ideally the notebook code should be migrated to the app.py when moving to production.
+- `utils.py` - This file contains utility code for operations like database connections.
+- `requirements.txt` - This file contains the list of necessary python packages.
+- `models/` - This directory should contain your SQLAlchemy model classes.
+- `data/` - This directory contains the following subdirectories:
+  - `interin/` - For intermediate data that has been transformed.
+  - `processed/` - For the final data to be used for modeling.
+  - `raw/` - For raw data without any processing.
+ 
+    
+## Setup
 
-## 🚛 How to deliver this project
+**Prerequisites**
 
-Once you have finished solving the exercises, be sure to commit your changes, push them to your repository, and go to 4Geeks.com to upload the repository link.
+Make sure you have Python 3.11+ installed on your. You will also need pip for installing the Python packages.
 
-## 📝 Instructions
+**Installation**
 
-### Image classification system
+Clone the project repository to your local machine.
 
-The dataset is composed of dog and cat photos provided as a subset of photos from a much larger collection of 3 million manually annotated photos. This data was obtained through a collaboration between Petfinder.com and Microsoft.
+Navigate to the project directory and install the required Python packages:
 
-The data set was originally used as a CAPTCHA, i.e., a task that a human is believed to find trivial, but that a machine cannot solve, which is used on websites to distinguish between human users and bots. The task was named "Asirra". When "Asirra" was introduced, it was mentioned "that user studies indicate that humans can solve it 99.6% of the time in less than 30 seconds." Barring a breakthrough in computer vision, we expect that computers will have no more than a 1/54,000 chance of solving it.
-
-At the time the competition was published, the state-of-the-art result was achieved with an SVM and was described in a 2007 paper with the title "Machine Learning Attacks against Asirra's CAPTCHA" (PDF) that achieved 80% classification accuracy. It was this paper that showed that the task was no longer a suitable task for a CAPTCHA shortly after the task was proposed.
-
-#### Step 1: Loading the dataset
-
-The dataset is located in Kaggle and you will need to access it to download it. You can find the competition [here](https://www.kaggle.com/c/dogs-vs-cats/data) (or by copying and pasting the following link in your browser: `https://www.kaggle.com/c/dogs-vs-cats/data`)
-
-Download the dataset folder and unzip the files. You will now have a folder called `train` containing 25,000 image files (.jpg format) of dogs and cats. The pictures are labeled by their file name, with the word `dog` or `cat`.
-
-#### Step 2: Visualize the input information
-
-The first step when faced with a picture classification problem is to get as much information as possible through the pictures. Therefore, load and print the first nine pictures of dogs in a single figure. Repeat the same for cats. You can see that the pictures are in color and have different shapes and sizes.
-
-This variety of sizes and formats must be sorted out before training the model. Make sure they all have a fixed size of 200x200 pixels.
-
-As you can see, there are a lot of images. Make sure you stick to the following rules:
-
-1. **If you have more than 12 gigabytes of RAM**, use the Keras image processing API to load the 25,000 photos into the training dataset and reshape them to 200×200 pixel square photos. The label must also be determined for each photo based on the file names. A tuple of photos and labels should be saved.
-2. **If you have no more than 12 gigabytes of RAM**, load the images progressively using the Keras `ImageDataGenerator` class and the `flow_from_directory()` function. This will be slower to run but it will run on less capable hardware. This function prefers the data to be split into separate *train* and *test* directories, and under each directory to have a subdirectory for each class.
-
-Once you have all the images processed, create an `ImageDataGenerator` object for training and test data. Then pass the folder that has training data to the `trdata` object and, similarly, pass the folder that has test data to the `tsdata` object. In this way, the images will be automatically labeled, and everything will be ready to enter the network.
-
-#### Step 3: Build an ANN
-
-Any classifier that fits this problem will have to be robust because some images show the cat or dog in a corner, or perhaps 2 cats or dogs in the same picture. If you have been able to research some of the winner implementations of other competitions also related to images, you will see that `VGG16` is a CNN architecture used to win the Kaggle ILSVR (Imagenet) competition in 2014. It is considered one of the best performing vision model architectures to date.
-
-It uses the following test architecture:
-
-```py
-model = Sequential()
-model.add(Conv2D(input_shape = (224,224,3), filters = 64, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 64,kernel_size = (3,3),padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Conv2D(filters = 128, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 128, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Conv2D(filters = 256, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 256, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 256, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(Conv2D(filters = 512, kernel_size = (3,3), padding = "same", activation = "relu"))
-model.add(MaxPool2D(pool_size = (2,2),strides = (2,2)))
-model.add(Flatten())
-model.add(Dense(units = 4096,activation = "relu"))
-model.add(Dense(units = 4096,activation = "relu"))
-model.add(Dense(units = 2, activation = "softmax"))
+```bash
+pip install -r requirements.txt
 ```
 
-The above code applies convolutions to the data (`Conv2D` and `MaxPool2D` layers) and then applies dense layers (`Dense` layers) for processing the numerical values obtained after the convolutions.
+**Create a database (if needed)**
 
-Then add the remaining elements to form the model, train it and measure its performance.
+Create a new database within the Postgres engine by customizing and executing the following command: `$ createdb -h localhost -U <username> <db_name>`
+Connect to the Postgres engine to use your database, manipulate tables and data: `$ psql -h localhost -U <username> <db_name>`
+NOTE: Remember to check the ./.env file information to get the username and db_name.
 
-#### Step 4: Optimize the above model
+Once you are inside PSQL you will be able to create tables, make queries, insert, update or delete data and much more!
 
-Import the `ModelCheckpoint` and `EarlyStopping` method from Keras. Create an object of both and pass them as callback functions to `fit_generator`.
+**Environment Variables**
 
-Load the best model from the above and use the test set to make predictions.
+Create a .env file in the project root directory to store your environment variables, such as your database connection string:
 
-#### Step 5: Save the model
+```makefile
+DATABASE_URL="your_database_connection_url_here"
+```
 
-Store the model in the corresponding folder.
+## Running the Application
 
-> Note: We also incorporated the solution samples on `./solution.ipynb` that we strongly suggest you only use if you are stuck for more than 30 min or if you have already finished and want to compare it with your approach.
+To run the application, execute the app.py script from the root of the project directory:
+
+```bash
+python app.py
+```
+
+## Adding Models
+
+To add SQLAlchemy model classes, create new Python script files inside the models/ directory. These classes should be defined according to your database schema.
+
+Example model definition (`models/example_model.py`):
+
+```py
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+
+Base = declarative_base()
+
+class ExampleModel(Base):
+    __tablename__ = 'example_table'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+```
+
+## Working with Data
+
+You can place your raw datasets in the data/raw directory, intermediate datasets in data/interim, and the processed datasets ready for analysis in data/processed.
+
+To process data, you can modify the app.py script to include your data processing steps, utilizing pandas for data manipulation and analysis.
+
+## Contributors
+
+This template was built as part of the 4Geeks Academy [Data Science and Machine Learning Bootcamp](https://4geeksacademy.com/us/coding-bootcamps/datascience-machine-learning) by [Alejandro Sanchez](https://twitter.com/alesanchezr) and many other contributors. Find out more about [4Geeks Academy's BootCamp programs](https://4geeksacademy.com/us/programs) here.
+
+Other templates and resources like this can be found on the school GitHub page.
